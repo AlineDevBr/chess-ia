@@ -15,7 +15,7 @@
     Special Movements: Delegates, Events, Buttons, TaskCompletionSource and DOTween with Actions.
 
     Artificial Intelligence: Recursive programming, Minimax Algorithm, Use of background threads, 
-    Saving and reloading states, Alpha-Beta Pruning, Square Table Evaluation and Code optimization
+    Saving and reloading states, Alpha-Beta Pruning, Square Table Evaluation and Code optimization 
 
 <br>
 Version 1.0 : https://alfredo1995.itch.io/chess-ia
