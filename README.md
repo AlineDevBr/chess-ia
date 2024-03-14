@@ -14,3 +14,4 @@ Artificial Intelligence: Recursive programming, Minimax Algorithm, Use of backgr
 
 Version 1.0 : https://alfredo1995.itch.io/chess-ia
  
+![capa](https://github.com/alfredo1995/chess-ia/assets/71193893/03350dec-4ff7-4b3d-9a37-c95f6d1161bf)
