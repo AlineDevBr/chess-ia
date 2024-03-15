@@ -1,0 +1,64 @@
+Hierachy | + = pasta | - = pasta acessada 
+
++ Chessboard 
+	script: Board.cs 
+
+	O script Board.cs : Controla o tabuleiro do jogo de xadrez e gerencia as peças e movimentos.
+
+	public static Board instance;: Define uma instância estática da classe Board para facilitar o acesso a partir de outros scripts.
+	public Dictionary<Vector2Int, Tile> tiles = new Dictionary<Vector2Int, Tile>();: Cria um dicionário que mapeia as posições no tabuleiro para os objetos Tile correspondentes.
+	public Transform goldHolder{get{return StateMachineController.instance.player1.transform;}}: Obtém o transform do jogador 1 do StateMachineController.
+	public Transform greenHolder{get{return StateMachineController.instance.player2.transform;}}: Obtém o transform do jogador 2 do StateMachineController.
+	public List<Piece> goldPieces = new List<Piece>();: Lista de peças do jogador 1.
+	public List<Piece> greenPieces = new List<Piece>();: Lista de peças do jogador 2.
+	public Piece selectedPiece;: Peça selecionada atualmente.
+	public AvailableMove selectedMove;: Movimento selecionado atualmente.
+
+
+	void Awake() { instance = this; }: 
+		//Define a instância atual como a instância estática quando o objeto é inicializado.
+
+
+	public async Task Load(){GetTeams(); await Task.Run(() => CreateBoard()); } 
+		//Método assíncrono para carregar o tabuleiro e as peças.
+		GetTeams();: Este método é chamado para obter as equipes de peças dos jogadores. Adiciona as peças encontradas nos transformadores dos jogadores 1 e 2 às listas goldPieces e greenPieces.
+		await Task.Run(() => CreateBoard());: Aqui, está sendo utilizado um método assíncrono para executar a criação do tabuleiro em uma tarefa separada. Isso é feito para evitar bloquear a thread principal da aplicação enquanto o tabuleiro é criado. A expressão () => CreateBoard() representa uma função lambda que chama o método CreateBoard() dentro de uma tarefa assíncrona.
+		CreateBoard() representa uma função lambda que chama o método CreateBoard() dentro de uma tarefa assíncrona.
+		Resumindo, o método Load() primeiro obtém as equipes de peças dos jogadores e, em seguida, cria o tabuleiro de forma assíncrona, utilizando uma tarefa separada para garantir a fluidez da execução do jogo.
+
+
+	public void ResetBoard(){
+          foreach(Tile t in tiles.Values){
+              t.content = null;
+          }
+          foreach(Piece p in goldPieces){
+              ResetPiece(p);
+          }
+          foreach(Piece p in greenPieces){
+              ResetPiece(p);
+          }
+        }
+		//O método ResetBoard() é responsável por reiniciar o tabuleiro e todas as peças, removendo qualquer conteúdo presente nas casas (Tile) e restaurando as peças às suas posições iniciais.
+		foreach(Tile t in tiles.Values) { t.content = null; }: Este loop foreach itera sobre todas as casas (Tile) presentes no dicionário tiles e define o conteúdo de cada casa como nulo, ou seja, remove qualquer peça que esteja ocupando a casa.
+		foreach(Piece p in goldPieces) { ResetPiece(p); }: Este loop foreach itera sobre todas as peças da equipe de ouro (goldPieces) e chama o método ResetPiece(p) para cada peça. O objetivo é restaurar cada peça à sua posição inicial no tabuleiro.
+		foreach(Piece p in greenPieces) { ResetPiece(p); }: Este loop foreach é semelhante ao anterior, mas itera sobre todas as peças da equipe verde (greenPieces) e também chama o método ResetPiece(p) para restaurar as peças à suas posições iniciais.
+		Em resumo, o método ResetBoard() é crucial para reiniciar o estado do jogo, removendo todas as peças do tabuleiro e restaurando-as às suas posições iniciais, preparando o jogo para um novo início.
+		
+
+	void ResetPiece(Piece piece){
+           if(!piece.gameObject.activeSelf)
+               return;
+           Vector2Int pos = new Vector2Int((int)piece.transform.position.x, (int)piece.transform.position.y);
+           tiles.TryGetValue(pos, out piece.tile);
+           piece.tile.content = piece;
+   	}
+		//O método ResetPiece(Piece piece) é chamado pelo método ResetBoard() para reiniciar uma peça específica. 
+		if(!piece.gameObject.activeSelf) return;: Esta linha verifica se o objeto ao qual a peça está vinculada não está ativo (ou seja, não está visível no jogo). Se não estiver ativo, o método retorna imediatamente
+		Vector2Int pos = new Vector2Int((int)piece.transform.position.x, (int)piece.transform.position.y);: Aqui, é criado um objeto Vector2Int com as coordenadas inteiras da posição da peça no momento da chamada do método ResetPiece(). Isso é usado para determinar a posição correta da peça no tabuleiro.
+		tiles.TryGetValue(pos, out piece.tile);: Esta linha tenta obter a casa (Tile) correspondente à posição da peça no tabuleiro a partir do dicionário tiles. Se a casa for encontrada, ela é armazenada na variável piece.tile.
+		piece.tile.content = piece;: Finalmente, o conteúdo da casa (Tile) é definido como a própria peça, atualizando a referência da peça na casa onde ela está localizada no tabuleiro.
+		Em resumo, o método ResetPiece(Piece piece) garante que uma peça seja restaurada à sua posição inicial no tabuleiro, verificando se ela está ativa, obtendo a posição correta no tabuleiro e atualizando a referência da peça na casa correspondente. Isso é importante para garantir a consistência e a correta inicialização do estado do jogo ao reiniciar.
+
+
+
+
