@@ -682,3 +682,85 @@ public class KnightMovement : Movement
 
 
 
+
+
+
+
+
+
+
+
+
+
++statemachine gameoject
+
+
+
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using System.Threading.Tasks;
+
+public class StateMachineController : MonoBehaviour
+{
+    public static StateMachineController instance; // Referência estática para permitir acesso de outros scripts
+
+    public Player player1; // Referência ao jogador 1
+    public Player player2; // Referência ao jogador 2
+    public Player currentlyPlaying; // Referência ao jogador atualmente jogando
+    public TaskCompletionSource<object> taskHold; // Tarefa de conclusão de operação assíncrona
+    public GameObject promotionPanel; // Painel de promoção de peão
+    State _current; // Estado atual da máquina de estados
+    bool busy; // Indica se a máquina de estados está ocupada
+
+    void Awake()
+    {
+        instance = this; // Configuração da referência estática ao iniciar o objeto
+    }
+
+    void Start()
+    {
+        ChangeTo<LoadState>(); // Inicia o jogo mudando para o estado de carregamento
+    }
+
+    // Método para mudar para um estado específico
+    public void ChangeTo<T>() where T : State
+    {
+        State state = GetState<T>(); // Obtém o estado desejado
+        if (_current != state) // Verifica se o estado atual é diferente do estado desejado
+            ChangeState(state); // Realiza a mudança de estado
+    }
+
+    // Método para obter um estado existente ou criar um novo se não existir
+    public T GetState<T>() where T : State
+    {
+        T target = GetComponent<T>(); // Tenta obter o componente do tipo T
+        if (target == null) // Se o componente não existir
+            target = gameObject.AddComponent<T>(); // Adiciona o componente ao GameObject
+        return target; // Retorna o estado obtido ou criado
+    }
+
+    // Método para realizar a mudança de estado
+    void ChangeState(State value)
+    {
+        if (busy) // Verifica se a máquina de estados está ocupada
+            return; // Se estiver ocupada, não realiza a mudança de estado
+        busy = true; // Marca a máquina de estados como ocupada
+
+        if (_current != null) // Verifica se existe um estado atual
+            _current.Exit(); // Se existir, chama o método de saída do estado atual
+
+        _current = value; // Define o novo estado como estado atual
+        if (_current != null) // Verifica se o novo estado não é nulo
+            _current.Enter(); // Se não for nulo, chama o método de entrada do novo estado
+
+        busy = false; // Marca a máquina de estados como não ocupada
+    }
+}
+
+
+
+
+
+
+
