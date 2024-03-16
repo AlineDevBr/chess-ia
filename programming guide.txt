@@ -1,6 +1,7 @@
 Hierachy | + = pasta | - = pasta acessada 
 
 + Chessboard 
+
 	script: Board.cs 
 
 	O script Board.cs : Controla o tabuleiro do jogo de xadrez e gerencia as peças e movimentos.
@@ -98,3 +99,468 @@ Hierachy | + = pasta | - = pasta acessada
 
 
 	
+
+
+
+
+
+
+
++ Highlights.cs 
+
+	Este script é responsável por gerenciar os destaques no tabuleiro de xadrez, destacando os tiles disponíveis para movimento e deselecionando-os conforme necessário.
+
+
+
+	public static Highlights instance;: Define uma instância estática da classe Highlights para facilitar o acesso a partir de outros scripts.
+	public SpriteRenderer highlightsPrefab;: Referência ao prefab de SpriteRenderer usado para criar os destaques no tabuleiro.
+	Queue<SpriteRenderer> activeHighlights = new Queue<SpriteRenderer>();: Fila para armazenar os destaques ativos no tabuleiro.
+	Queue<SpriteRenderer> onReserve = new Queue<SpriteRenderer>();: Fila para armazenar os destaques em reserva, que podem ser reutilizados.
+
+	void Awake() { instance = this; }: Define a instância atual como a instância estática quando o objeto é inicializado.
+
+	public void SelectTiles(List<AvailableMove> availableMoves) { ... }: Método para selecionar e destacar os tiles disponíveis para movimento. Ele itera sobre a lista de movimentos disponíveis, cria novos destaques se necessário, configura sua posição, cor e evento de clique, e os adiciona à fila de destaques ativos.
+
+	public void DeSelectTiles() { ... }: Método para deselecionar e ocultar os destaques ativos no tabuleiro. Ele esvazia a fila de destaques ativos, ocultando-os e movendo-os de volta para a fila de reserva.
+
+	void CreateHighlight() { ... }: Método para criar um novo destaque a partir do prefab highlightsPrefab e adicioná-lo à fila de reserva.
+
+
+
+
++Player.cs 
+
+	Este script permite definir a cor do jogador e se ele é controlado pela IA ou não. Essas propriedades são úteis para diferenciar os jogadores no jogo de xadrez e determinar como eles serão controlados durante a partida.
+
+	public class Player : MonoBehaviour
+	{
+   	  public Color color; // Cor do jogador
+    	  public bool AIControlled; // Se o jogador é controlado pela IA
+	}
+
+
+
+
++king.cs 
+
+	Este script herda funcionalidades da classe Piece e sobrescreve o método Start() para configurar o movimento específico do Rei utilizando a classe KingMovement. Além disso, ele implementa o método CreateAffected() para criar uma peça afetada, como o Rei e a Torre, para o movimento do Roque.
+
+	public class King : Piece
+	{
+   	  protected override void Start()
+   	  {
+    	    base.Start();
+    	    movement = new KingMovement(maxTeam); // Configura o movimento específico do Rei
+   	  }
+	
+	//O código fornecido mostra a classe King herdando da classe Piece e substituindo o método Start() para configurar o movimento específico do Rei utilizando a classe KingMovement. Essa é uma abordagem comum em jogos de xadrez, onde cada tipo de peça (Rei, Rainha, Torre, etc.) tem seu próprio comportamento de movimento.
+
+
+  	  public override AffectedPiece CreateAffected()
+  	  {
+   	    AffectedKingRook aff = new AffectedKingRook();
+    	    aff.wasMoved = wasMoved;
+     	    return aff;
+   	  }
+
+	
+	O método CreateAffected() na classe King é responsável por criar uma peça afetada específica para o movimento do Rei, especialmente para o movimento do Roque.
+
+	ffectedKingRook aff = new AffectedKingRook();: Cria uma nova instância da classe AffectedKingRook, que provavelmente é uma classe que representa uma peça afetada, no caso, o Rei e a Torre para o movimento do Roque.
+
+	aff.wasMoved = wasMoved;: Atribui o estado de movimento (wasMoved) do Rei à peça afetada. Isso pode ser importante para determinar se o movimento do Roque é possível, pois depende de o Rei e a Torre não terem se movido anteriormente.
+
+	return aff;: Retorna a instância da peça afetada aff.
+
+	//Este método é crucial para o funcionamento correto do movimento do Roque no jogo de xadrez, garantindo que a peça afetada seja corretamente configurada para refletir o estado do jogo.
+
+
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class KingMovement : Movement
+{
+    public KingMovement(bool maxTeam)
+    {
+        value = 100000; // Valor da peça para avaliação do algoritmo de IA
+        if (maxTeam)
+            positionValue = AIController.instance.squareTable.kingGold; // Valor da posição no tabuleiro para a IA (time dourado)
+        else
+            positionValue = AIController.instance.squareTable.kingGreen; // Valor da posição no tabuleiro para a IA (time verde)
+    }
+
+    public override List<AvailableMove> GetValidMoves()
+    {
+        List<AvailableMove> moves = new List<AvailableMove>();
+
+        // Movimento horizontal para frente e para trás
+        UntilBlockedPath(moves, new Vector2Int(1, 0), true, 1);
+        UntilBlockedPath(moves, new Vector2Int(-1, 0), true, 1);
+        // Movimento vertical para frente e para trás
+        UntilBlockedPath(moves, new Vector2Int(0, 1), true, 1);
+        UntilBlockedPath(moves, new Vector2Int(0, -1), true, 1);
+        // Movimento diagonal para frente e para a direita
+        UntilBlockedPath(moves, new Vector2Int(1, 1), true, 1);
+        // Movimento diagonal para frente e para a esquerda
+        UntilBlockedPath(moves, new Vector2Int(1, -1), true, 1);
+        // Movimento diagonal para trás e para a esquerda
+        UntilBlockedPath(moves, new Vector2Int(-1, -1), true, 1);
+        // Movimento diagonal para trás e para a direita
+        UntilBlockedPath(moves, new Vector2Int(-1, 1), true, 1);
+
+        Castling(moves); // Adiciona movimento de Roque aos movimentos válidos do Rei
+
+        return moves;
+    }
+
+    void Castling(List<AvailableMove> moves)
+    {
+        if (Board.instance.selectedPiece.wasMoved) // Verifica se o Rei já se moveu anteriormente
+            return;
+
+        // Verifica o movimento de Roque para a direita (Roque pequeno)
+        Tile temp = CheckRook(new Vector2Int(1, 0));
+        if (temp != null)
+        {
+            moves.Add(new AvailableMove(temp.pos, MoveType.Castling)); // Adiciona o movimento de Roque à lista de movimentos válidos
+        }
+        // Verifica o movimento de Roque para a esquerda (Roque grande)
+        temp = CheckRook(new Vector2Int(-1, 0));
+        if (temp != null)
+        {
+            moves.Add(new AvailableMove(temp.pos, MoveType.Castling)); // Adiciona o movimento de Roque à lista de movimentos válidos
+        }
+
+        return;
+    }
+
+    Tile CheckRook(Vector2Int direction)
+    {
+        Rook rook;
+        Tile currentTile = GetTile(Board.instance.selectedPiece.tile.pos + direction); // Obtém a próxima posição no tabuleiro
+
+        while (currentTile != null)
+        {
+            if (currentTile.content != null)
+                break;
+            currentTile = GetTile(currentTile.pos + direction); // Move para a próxima posição na direção especificada
+        }
+
+        if (currentTile == null)
+            return null;
+
+        rook = currentTile.content as Rook; // Verifica se a peça na posição é uma Torre
+        if (rook == null || rook.wasMoved) // Se não for uma Torre ou a Torre já se moveu, retorna null
+            return null;
+
+        return rook.tile; // Retorna o tile da Torre válida para o movimento de Roque
+    }
+}
+
+
+Este script herda funcionalidades da classe Movement e implementa o método GetValidMoves(), que determina os movimentos válidos para o Rei no jogo de xadrez, incluindo a lógica para o movimento de Roque. O método Castling() verifica se o Rei pode realizar o movimento de Roque pequeno (para a direita) ou grande (para a esquerda) e adiciona esses movimentos à lista de movimentos válidos.
+
+
+
+
+
+
+
+
+
+
+
+
++ Queen
+
+	Aqui está o código do script Queen.cs, que pertence ao objeto filho Queen do objeto GoldPieces e configura o movimento específico para a Rainha no jogo de xadrez:
+
+	public class Queen : Piece
+	 {
+  	   protected override void Start()
+   	   {
+   	     base.Start();
+    	     movement = new QueenMovement(maxTeam); // Configura o movimento específico da Rainha
+   	   }
+	 }
+
+	Este script herda funcionalidades da classe Piece e sobrescreve o método Start() para configurar o movimento específico da Rainha utilizando a classe QueenMovement. Isso permite que a Rainha se mova de acordo com as regras do xadrez para essa peça específica.
+
+QueenMovement.cs
+
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class QueenMovement : Movement
+{
+    public QueenMovement(bool maxTeam)
+    {
+        value = 900; // Valor da peça para avaliação do algoritmo de IA
+        if (maxTeam)
+            positionValue = AIController.instance.squareTable.queenGold; // Valor da posição no tabuleiro para a IA (time dourado)
+        else
+            positionValue = AIController.instance.squareTable.queenGreen; // Valor da posição no tabuleiro para a IA (time verde)
+    }
+
+    public override List<AvailableMove> GetValidMoves()
+    {
+        List<AvailableMove> moves = new List<AvailableMove>();
+
+        // Movimento horizontal para frente e para trás
+        UntilBlockedPath(moves, new Vector2Int(1, 0), true, 99);
+        UntilBlockedPath(moves, new Vector2Int(-1, 0), true, 99);
+        // Movimento vert
+
+
+
+
+
+
+
+
++bispo 
+
+public class Bishop : Piece
+{
+    protected override void Start()
+    {
+        base.Start();
+        movement = new BishopMovement(maxTeam); // Configura o movimento específico do Bispo
+    }
+}
+
+
+	Este script herda funcionalidades da classe Piece e sobrescreve o método Start() para configurar o movimento específico do Bispo utilizando a classe BishopMovement. Isso permite que o Bispo se mova de acordo com as regras do xadrez para essa peça específica.	
+
+
+BishopMovement.cs
+
+
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class BishopMovement : Movement
+{
+    public BishopMovement(bool maxTeam)
+    {
+        value = 300; // Valor da peça para avaliação do algoritmo de IA
+        if (maxTeam)
+            positionValue = AIController.instance.squareTable.bishopGold; // Valor da posição no tabuleiro para a IA (time dourado)
+        else
+            positionValue = AIController.instance.squareTable.bishopGreen; // Valor da posição no tabuleiro para a IA (time verde)
+    }
+
+    public override List<AvailableMove> GetValidMoves()
+    {
+        List<AvailableMove> moves = new List<AvailableMove>();
+
+        // Movimento diagonal para frente e para a direita
+        UntilBlockedPath(moves, new Vector2Int(1, 1), true, 99);
+        // Movimento diagonal para frente e para a esquerda
+        UntilBlockedPath(moves, new Vector2Int(1, -1), true, 99);
+        // Movimento diagonal para trás e para a esquerda
+        UntilBlockedPath(moves, new Vector2Int(-1, -1), true, 99);
+        // Movimento diagonal para trás e para a direita
+        UntilBlockedPath(moves, new Vector2Int(-1, 1), true, 99);
+
+        return moves;
+    }
+}
+
+
+
+
+
++Rook.cs
+
+
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class Rook : Piece
+{
+    protected override void Start()
+    {
+        base.Start();
+        movement = new RookMovement(maxTeam); // Configura o movimento específico da Torre
+    }
+
+    public override AffectedPiece CreateAffected()
+    {
+        AffectedKingRook aff = new AffectedKingRook();
+        aff.wasMoved = wasMoved;
+        return aff;
+    }
+}
+
+
+Este script herda funcionalidades da classe Piece e sobrescreve o método Start() para configurar o movimento específico da Torre utilizando a classe RookMovement. Além disso, ele implementa o método CreateAffected() para criar um objeto que representa o efeito de movimento na Torre, como parte da lógica do jogo.
+
+
+
+
+
+RookMovement.cs
+
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class RookMovement : Movement
+{
+    public RookMovement(bool maxTeam)
+    {
+        value = 500; // Valor da peça para avaliação do algoritmo de IA
+        if (maxTeam)
+            positionValue = AIController.instance.squareTable.rookGold; // Valor da posição no tabuleiro para a IA (time dourado)
+        else
+            positionValue = AIController.instance.squareTable.rookGreen; // Valor da posição no tabuleiro para a IA (time verde)
+    }
+
+    public override List<AvailableMove> GetValidMoves()
+    {
+        List<AvailableMove> moves = new List<AvailableMove>();
+
+        // Movimento horizontal para frente e para trás
+        UntilBlockedPath(moves, new Vector2Int(1, 0), true, 99);
+        UntilBlockedPath(moves, new Vector2Int(-1, 0), true, 99);
+        // Movimento vertical para frente e para trás
+        UntilBlockedPath(moves, new Vector2Int(0, 1), true, 99);
+        UntilBlockedPath(moves, new Vector2Int(0, -1), true, 99);
+
+        return moves;
+    }
+}
+
+
+
+
+
+
++Pawn.cs
+
+
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class Pawn : Piece
+{
+    public Movement savedMovement; // Movimento padrão do Peão
+    public Movement queenMovement; // Movimento da Rainha (para promoção)
+    public Movement knightMovement; // Movimento do Cavalo (para promoção)
+
+    protected override void Start()
+    {
+        base.Start();
+        movement = savedMovement = new PawnMovement(maxTeam); // Configura o movimento padrão do Peão
+        queenMovement = new QueenMovement(maxTeam); // Configura o movimento da Rainha para promoção
+        knightMovement = new KnightMovement(maxTeam); // Configura o movimento do Cavalo para promoção
+    }
+
+    public override AffectedPiece CreateAffected()
+    {
+        AffectedPawn aff = new AffectedPawn();
+        aff.wasMoved = wasMoved;
+        return aff;
+    }
+}
+
+Este script herda funcionalidades da classe Piece e define o comportamento do Peão no jogo de xadrez. Ele também inclui movimentos adicionais para promoção do Peão, permitindo que ele se torne uma Rainha ou um Cavalo após alcançar a última fileira do tabuleiro.
+
+
+
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class PawnMovement : Movement
+{
+    Vector2Int direction; // Direção do movimento do Peão (para frente)
+    int promotionHeight; // Altura na qual o Peão pode ser promovido
+    public PawnMovement(bool maxTeam)
+    {
+        if (maxTeam)
+        {
+            direction = new Vector2Int(0, 1); // Movimento para frente para o time dourado
+            promotionHeight = 7; // Altura de promoção para o time dourado
+            positionValue = AIController.instance.squareTable.pawnGold; // Valor da posição no tabuleiro para a IA (time dourado)
+        }
+        else
+        {
+            direction = new Vector2Int(0, -1); // Movimento para frente para o time verde
+            promotionHeight = 0; // Altura de promoção para o time verde
+            positionValue = AIController.instance.squareTable.pawnGreen; // Valor da posição no tabuleiro para a IA (time verde)
+        }
+        value = 100; // Valor da peça para avaliação do algoritmo de IA
+    }
+
+    public override List<AvailableMove> GetValidMoves()
+    {
+        List<AvailableMove> moveable = new List<AvailableMove>();
+        List<AvailableMove> moves = new List<AvailableMove>();
+        GetPawnAttack(moveable); // Adiciona movimentos de ataque ao Peão
+
+        if (!Board.instance.selectedPiece.wasMoved) // Se o Peão ainda não se moveu
+        {
+            UntilBlockedPath(moves, direction, false, 2); // Movimento duplo inicial
+            if (moves.Count == 2)
+                moves[1] = new AvailableMove(moves[1].pos, MoveType.PawnDoubleMove); // Define o tipo de movimento duplo inicial
+        }
+        else
+        {
+            UntilBlockedPath(moves, direction, false, 1); // Movimento simples
+            if (moves.Count > 0)
+                moves[0] = CheckPromotion(moves[0]); // Verifica se é possível promover o Peão
+        }
+        moveable.AddRange(moves);
+
+        return moveable;
+    }
+
+    void GetPawnAttack(List<AvailableMove> pawnAttack)
+    {
+        Piece piece = Board.instance.selectedPiece;
+        Vector2Int leftPos = new Vector2Int(piece.tile.pos.x - 1, piece.tile.pos.y + direction.y); // Posição do ataque à esquerda
+        Vector2Int rightPos = new Vector2Int(piece.tile.pos.x + 1, piece.tile.pos.y + direction.y); // Posição do ataque à direita
+
+        GetPawnAttack(GetTile(leftPos), pawnAttack); // Adiciona ataque à esquerda
+        GetPawnAttack(GetTile(rightPos), pawnAttack); // Adiciona ataque à direita
+    }
+
+    void GetPawnAttack(Tile tile, List<AvailableMove> pawnAttack)
+    {
+        if (tile == null)
+            return;
+        if (IsEnemy(tile)) // Se a peça é um inimigo, é possível atacar
+        {
+            pawnAttack.Add(new AvailableMove(tile.pos, MoveType.Normal)); // Adiciona movimento de ataque normal
+        }
+        else if (PieceMovementState.enPassantFlag.moveType == MoveType.EnPassant && PieceMovementState.enPassantFlag.pos == tile.pos)
+        {
+            pawnAttack.Add(new AvailableMove(tile.pos, MoveType.EnPassant)); // Adiciona movimento de en passant se disponível
+        }
+    }
+
+    AvailableMove CheckPromotion(AvailableMove availableMove)
+    {
+        if (availableMove.pos.y != promotionHeight) // Verifica se o Peão chegou à altura de promoção
+            return availableMove;
+        return new AvailableMove(availableMove.pos, MoveType.Promotion); // Define o tipo de movimento como promoção
+
+
+Este script herda funcionalidades da classe Movement e define o comportamento específico do movimento do Peão no jogo de xadrez, incluindo movimentos de ataque, movimento duplo inicial, promoção e movimentos especiais como o en passant.
+
+
+
+
+
+
+
+
+
+
