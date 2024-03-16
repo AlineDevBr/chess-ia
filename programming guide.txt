@@ -560,6 +560,124 @@ Este script herda funcionalidades da classe Movement e define o comportamento es
 
 
 
++Knight .cs
+
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class Knight : Piece
+{
+   protected override void Start(){
+        base.Start();
+        movement = new KnightMovement(maxTeam);
+    }
+}
+
+
+
+using System.Collections;: Esta linha importa o namespace System.Collections, que contém classes e interfaces para manipulação de coleções de objetos.
+
+using System.Collections.Generic;: Aqui, o namespace System.Collections.Generic é importado. Ele fornece classes genéricas, como listas, dicionários e conjuntos, para armazenar e manipular coleções de objetos.
+
+using UnityEngine;: Este namespace é usado em Unity e fornece acesso a classes e funcionalidades específicas do mecanismo Unity, como componentes, física e renderização.
+
+public class Knight : Piece: Aqui, uma classe chamada Knight é definida e declara que ela é uma subclasse de Piece. Isso significa que Knight herda todos os membros (métodos, propriedades, campos) de Piece e pode adicionar comportamentos específicos para um cavalo no jogo.
+
+protected override void Start() { }: Este é um método de inicialização especial em Unity que é chamado quando o objeto é instanciado. O modificador protected significa que o método só pode ser acessado por classes derivadas (subclasses). O modificador override indica que esse método está substituindo o método Start da classe base Piece.
+
+base.Start();: Esta linha chama o método Start da classe base Piece. É comum chamar o método da classe base ao substituir métodos em classes derivadas para garantir que o comportamento da classe base também seja executado.
+
+movement = new KnightMovement(maxTeam);: Aqui, um novo objeto KnightMovement é criado e atribuído à variável movement. O construtor KnightMovement(maxTeam) pode estar inicializando o comportamento de movimento específico do cavalo, talvez definindo as regras de movimento para o cavalo com base no time (maxTeam).
+
+Este código é uma estrutura básica para implementar o comportamento de um cavalo (Knight) em um jogo de xadrez dentro do Unity, onde Piece provavelmente é uma classe base que define comportamentos genéricos de peças de xadrez, e KnightMovement é uma classe responsável por determinar como o cavalo se move no tabuleiro.
+
+
+
+KnightMovement.cs
+
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class KnightMovement : Movement
+{
+    // Construtor da classe KnightMovement
+    public KnightMovement(bool maxTeam)
+    {
+        // Define o valor do cavalo como 300
+        value = 300;
+        
+        // Define o valor de posição com base no time do cavalo
+        if (maxTeam)
+            positionValue = AIController.instance.squareTable.knightGold; // Time máximo
+        else
+            positionValue = AIController.instance.squareTable.knightGreen; // Time não máximo
+    }
+
+    // Método para obter os movimentos válidos do cavalo
+    public override List<AvailableMove> GetValidMoves()
+    {
+        // Lista de movimentos válidos
+        List<AvailableMove> moves = new List<AvailableMove>();
+
+        // Adiciona os movimentos em forma de L em diferentes direções à lista de movimentos válidos
+        moves.AddRange(GetLMovement(new Vector2Int(0, 1))); // Movimento vertical positivo
+        moves.AddRange(GetLMovement(new Vector2Int(0, -1))); // Movimento vertical negativo
+        moves.AddRange(GetLMovement(new Vector2Int(1, 0))); // Movimento horizontal positivo
+        moves.AddRange(GetLMovement(new Vector2Int(-1, 0))); // Movimento horizontal negativo
+
+        // Retorna a lista de movimentos válidos
+        return moves;
+    }
+
+    // Método para calcular os movimentos em forma de L em uma direção específica
+    List<AvailableMove> GetLMovement(Vector2Int direction)
+    {
+        // Lista de movimentos em forma de L
+        List<AvailableMove> moves = new List<AvailableMove>();
+
+        // Obtém a posição atual do cavalo no tabuleiro
+        Tile current = Board.instance.selectedPiece.tile;
+
+        // Obtém a posição duas casas à frente na direção especificada
+        Tile temp = GetTile(current.pos + direction * 2);
+
+        // Se a posição existe (não é nula), calcula a parte curva do movimento em forma de L
+        if (temp != null)
+        {
+            moves.AddRange(GetCurvedPart(temp.pos, new Vector2Int(direction.y, direction.x)));
+        }
+
+        // Retorna a lista de movimentos em forma de L
+        return moves;
+    }
+
+    // Método para calcular a parte curva do movimento em forma de L
+    List<AvailableMove> GetCurvedPart(Vector2Int pos, Vector2Int direction)
+    {
+        // Lista de movimentos disponíveis na parte curva do movimento em forma de L
+        List<AvailableMove> availableMoves = new List<AvailableMove>();
+
+        // Obtém a primeira casa na parte curva do movimento
+        Tile tile1 = GetTile(pos + direction);
+
+        // Obtém a segunda casa na parte curva do movimento
+        Tile tile2 = GetTile(pos - direction);
+
+        // Verifica se as casas são válidas (não nulas) e se estão vazias ou contêm peças do time adversário
+        if (tile1 != null && (tile1.content == null || IsEnemy(tile1)))
+            availableMoves.Add(new AvailableMove(tile1.pos));
+
+        if (tile2 != null && (tile2.content == null || IsEnemy(tile2)))
+            availableMoves.Add(new AvailableMove(tile2.pos));
+
+        // Retorna a lista de movimentos disponíveis na parte curva do movimento em forma de L
+        return availableMoves;
+    }
+}
+
+
 
 
 
