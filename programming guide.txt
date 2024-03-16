@@ -59,6 +59,42 @@ Hierachy | + = pasta | - = pasta acessada
 		piece.tile.content = piece;: Finalmente, o conteúdo da casa (Tile) é definido como a própria peça, atualizando a referência da peça na casa onde ela está localizada no tabuleiro.
 		Em resumo, o método ResetPiece(Piece piece) garante que uma peça seja restaurada à sua posição inicial no tabuleiro, verificando se ela está ativa, obtendo a posição correta no tabuleiro e atualizando a referência da peça na casa correspondente. Isso é importante para garantir a consistência e a correta inicialização do estado do jogo ao reiniciar.
 
+	void GetTeams()
+	{
+   	 goldPieces.AddRange(goldHolder.GetComponentsInChildren<Piece>());
+  	 greenPieces.AddRange(greenHolder.GetComponentsInChildren<Piece>());
+	}
+	
+		//O método GetTeams() é responsável por obter as peças dos jogadores a partir dos transformadores dos jogadores e adicioná-las às listas goldPieces e greenPieces. Vamos analisar o código dentro deste método:
+		goldPieces.AddRange(goldHolder.GetComponentsInChildren<Piece>());: Esta linha obtém todos os componentes Piece que estão nos filhos do transformador goldHolder (provavelmente associado ao jogador 1) e adiciona essas peças à lista goldPieces
+		greenPieces.AddRange(greenHolder.GetComponentsInChildren<Piece>());: Da mesma forma, esta linha obtém todos os componentes Piece que estão nos filhos do transformador greenHolder (provavelmente associado ao jogador 2) e adiciona essas peças à lista greenPieces.
+		Em resumo, o método GetTeams() é responsável por reunir as peças de cada equipe (ouro e verde) a partir dos transformadores dos jogadores e organizá-las nas listas correspondentes. Isso é fundamental para o gerenciamento das peças durante o jogo e a interação com o tabuleiro.
+	
+	public void CreateBoard(){
+       	 for(int i=0; i<8; i++){
+         for(int j=0; j<8; j++){
+           CreateTile(i, j);
+          }}
+        }
+
+		//método CreateBoard() é responsável por criar o tabuleiro de xadrez, gerando todas as casas (Tile) necessárias para representar as posições do jogo. Vamos analisar o código dentro deste método:
+		for(int i=0; i<8; i++) {: Este loop for externo itera pelas linhas do tabuleiro (de 0 a 7, totalizando 8 linhas).
+		for(int j=0; j<8; j++) {: Dentro do loop externo, há um loop for interno que itera pelas colunas do tabuleiro (de 0 a 7, totalizando 8 colunas).
+		reateTile(i, j);: Para cada posição (i, j) no tabuleiro, este método chama o método CreateTile() para criar uma nova casa (Tile) e adicioná-la ao tabuleiro.
+		método CreateBoard() utiliza dois loops for para criar todas as casas necessárias para representar um tabuleiro de xadrez padrão de 8x8. Cada iteração do loop cria uma nova casa chamando o método CreateTile() com as coordenadas (i, j) correspondentes à posição no tabuleiro. Essa é uma abordagem comum para criar estruturas tabulares como um tabuleiro de xadrez.
+	
+	void CreateTile(int i, int j){
+     	   Tile tile = new Tile();
+     	   tile.pos = new Vector2Int(i, j);
+     	   tiles.Add(tile.pos, tile);
+  	  }
+	}
+
+		//O método CreateTile(int i, int j) é responsável por criar uma nova casa (Tile) no tabuleiro de xadrez. Vamos analisar o código dentro deste método:
+		Tile tile = new Tile();: Cria um novo objeto Tile, que provavelmente é uma classe ou estrutura que representa uma casa no tabuleiro de xadrez.
+		tile.pos = new Vector2Int(i, j);: Define a posição (pos) da casa como um novo objeto Vector2Int com as coordenadas (i, j) passadas como parâmetros para o método. Isso associa a casa à sua posição específica no tabuleiro.
+		tiles.Add(tile.pos, tile);: Adiciona a casa ao dicionário tiles, usando sua posição como chave e o objeto Tile como valor. Isso permite acessar rapidamente uma casa específica no tabuleiro com base em suas coordenadas.
+		Em resumo, o método CreateTile(int i, int j) cria uma nova casa no tabuleiro de xadrez e a associa à sua posição específica no tabuleiro, adicionando-a ao dicionário tiles para posterior acesso e manipulação durante o jogo. Essa abordagem é comum ao criar estruturas de dados para representar tabuleiros em jogos de tabuleiro.
 
 
-
+	
