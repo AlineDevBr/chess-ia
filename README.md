@@ -17,6 +17,11 @@
 
 <br>
 
+<br> </br>
+
+https://github.com/alfredo1995/chess-ia/assets/71193893/bb865754-cb95-4f67-a72a-f039c9aabd39
+
+
 When developing the Chess game in Unity, I implemented advanced artificial intelligence (AI) based on the Minimax algorithm with Alpha-Beta Pruning. This algorithm is widely used in strategy games, such as Chess, to make movement decisions based on assessments of possible future scenarios.
 
 The development process involved several aspects of artificial intelligence and code optimization. I used recursive programming to calculate multiple turns in advance, allowing the AI to plan its moves in depth and efficiently.
@@ -28,8 +33,3 @@ Additionally, I implemented a state save and reload system to allow players to s
 Board evaluation has been carefully designed using a combination of techniques, including square table evaluation, where each position on the board is assigned a value based on factors such as piece mobility, territory control, and positional advantage.
 
 The application of the Minimax algorithm with Alpha-Beta Pruning was crucial to the AI's effectiveness in making intelligent and strategic decisions in the game of Chess. The use of these advanced artificial intelligence and code optimization techniques contributed to creating a challenging AI capable of competing at a high level, demonstrating its potential by defeating even experienced players like Garry Kasparov.
-
-<br> </br>
-
-https://github.com/alfredo1995/chess-ia/assets/71193893/bb865754-cb95-4f67-a72a-f039c9aabd39
-
