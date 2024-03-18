@@ -22,5 +22,5 @@ Version 1.0 : https://alfredo1995.itch.io/chess-ia
 <br> </br>
  
 
-https://github.com/alfredo1995/chess-ia/assets/71193893/19479a2b-6045-42d3-9093-03222944af5e
+https://github.com/alfredo1995/chess-ia/assets/71193893/bb865754-cb95-4f67-a72a-f039c9aabd39
 
