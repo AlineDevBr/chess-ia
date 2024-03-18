@@ -2,8 +2,6 @@
 
 <br>
 
-<b> What was done in this project? </b>
-
 </br>
 
     Board Setup: Asset Import (itch.io); Creation of Logic Board; Controls with Mouse and Singletons;
