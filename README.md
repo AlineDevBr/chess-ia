@@ -30,5 +30,6 @@ Board evaluation has been carefully designed using a combination of techniques, 
 The application of the Minimax algorithm with Alpha-Beta Pruning was crucial to the AI's effectiveness in making intelligent and strategic decisions in the game of Chess. The use of these advanced artificial intelligence and code optimization techniques contributed to creating a challenging AI capable of competing at a high level, demonstrating its potential by defeating even experienced players like Garry Kasparov.
 
 <br> </br>
+
 https://github.com/alfredo1995/chess-ia/assets/71193893/bb865754-cb95-4f67-a72a-f039c9aabd39
 
