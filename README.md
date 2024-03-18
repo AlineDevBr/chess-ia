@@ -1,8 +1,5 @@
 # Developed a Chess game in Unity and an AI capable of playing with several turns calculated ahead, based on the Minimax Alpha-Beta algorithm that defeated Garry Kasparov.
 
-<br>
-
-</br>
 
     Board Setup: Asset Import (itch.io); Creation of Logic Board; Controls with Mouse and Singletons;
 
