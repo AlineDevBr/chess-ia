@@ -21,4 +21,6 @@
 Version 1.0 : https://alfredo1995.itch.io/chess-ia
 <br> </br>
  
-![capa](https://github.com/alfredo1995/chess-ia/assets/71193893/03350dec-4ff7-4b3d-9a37-c95f6d1161bf)
+
+https://github.com/alfredo1995/chess-ia/assets/71193893/19479a2b-6045-42d3-9093-03222944af5e
+
